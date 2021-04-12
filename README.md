@@ -93,5 +93,60 @@ Then press Tab on your keyboard: it will autocomplete the name of the directory 
 
 # 3. SLURM Jobs 
 
-Since HiPerGator is used by thousands of people across the University, we cannot (generally) run big jobs interactively. 
- 
+Since HiPerGator is used by thousands of people across the University, we cannot (generally) run big jobs interactively. If your command can run in less than 10 minutes, uses less than 64 Gb of RAM, and less than 16 cores, you can run it interactively on the log-in nodes (where you end up when you `ssh` into the cluster). Otherwise, you should pass your commands to the scheduler system, called SLURM, that will find the appropriate time and computer(s) to run your job. For almost everything we do, we will be going through the SLURM scheduler.  
+
+There are few general parts to every SLURM script. You must always begin the script with this block of text:
+```
+#!/bin/sh
+#SBATCH --job-name=your_job_name       # Job name
+#SBATCH --mail-type=ALL                # Mail events (NONE, BEGIN, END, FAIL, ALL)
+#SBATCH --mail-user=username@ufl.edu   # Where to send mail
+#SBATCH --cpus-per-task=4              # Number of cores: Can also use -c=4
+#SBATCH --mem-per-cpu=2gb              # Per processor memory
+#SBATCH -t 4-00:00:00                  # Walltime
+#SBATCH -o your-job-name.%j.out        # Name output file
+#SBATCH --account=barbazuk             # Cluster account manager 
+#SBATCH --qos=barbazuk-b               # Specify to run on burst (-b) or not 
+#
+```
+We have to tell the scheduler how many resources and how much time the job will take. It can be hard to estimate this if you've never run a job before (or if you're running a job for a new program), but you'll get an idea about these parameters the more you use a program. 
+
+One thing to note is that you can run jobs on the normal queue by specifiying `qos=barbazuk` where you'll be able to run jobs for up to thirty days, or the burst queue (`qos=barbazuk-b`) where you have access to more resources but can only run jobs for four days. If you know your job will take 4 or fewer days, run your jobs on burst. 
+
+On the next few lines you can add commands about where to work; I usually use absolute paths for this. 
+```
+cd /blue/barbazuk/username
+```
+Then you can tell HiPerGator you need to use certain programs (called "modules") that are already installed. A full list of installed programs can be found [here](https://help.rc.ufl.edu/doc/Applications). 
+```
+module load mafft 
+```
+It is usually best practice to specify which version of a program you want to load (there are often several on HiPerGator). To see more details about a program you can do the following interactively:
+```
+module spider mafft
+```
+This will bring up a short description of the program and the versions available. Now we know that we want to load mafft ver. 7.407 so we can edit our SLURM script. 
+```
+module load mafft/7.407
+```
+And finally you want to include your command! 
+```
+mafft --maxiterate 1000 --localpair unaligned.fasta > aligned.fasta 
+```
+
+To submit your SLURM job: 
+```
+sbatch myslurm.slurm
+```
+
+To check on your job or other jobs: 
+```
+squeue -A barbazuk       # will print all the jobs on the Barbazuk account 
+squeue --qos barbazuk-b  # will print all the jobs ont he Barbazuk burst queue 
+squeue -U username       # will print all of your jobs 
+``` 
+
+If you need to cancel a job for any reason (you can get the jobID from the above commands): 
+```
+scancel jobID
+```
