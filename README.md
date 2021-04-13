@@ -2,6 +2,27 @@
 
 This is a general introduction for using the University of Florida's HiPerGator Computing Cluster. 
 
+# 0. Your Computer
+
+You'll need a basic understanding of your own computer before being able to log into HiPerGator. I've split this up into Mac/Linux and Windows. 
+
+<b> Windows </b> 
+
+In order to transfer files between your computer and the cluster, you'll need to download a Secure File Transfer Protocol (SFTP) client. Two commonly used SFTP clients are: 
+1. [WinSCP](https://winscp.net/eng/docs/free_sftp_client_for_windows) 
+2. [Filezilla](https://filezilla-project.org/) 
+
+Connect to hpg.rc.ufl.edu using one of these clients following their inscructions. You want omake sure you are connecting through SFTP (you should be connecting through Port 22). Log in with your GatorLink username and password. 
+
+Accessing the command line: Using the command line on Windows machines is a bit different than using a Mac or Linux machine. If you are using Windows 10, search (using the search bar on the bottom left of the taskbar for "CMD". Open the application called "Command Prompt". You should be able to continue to the next step (#1 Logging In and Moving Around). If you are not able to do so, you may have to install [GitBash](https://gitforwindows.org/).  
+
+<b> Mac/Linux </b> 
+
+In order to transfer files between your computer and the cluster, you'll need to download a Secure File Transfer Protocol (SFTP) client. A commonly used SFTP client on Mac/Linux machines is [Cyberduck](https://cyberduck.io/). Connect to hpg.rc.ufl.edu using one of these clients following their inscructions. You want omake sure you are connecting through SFTP (you should be connecting through Port 22). Log in with your GatorLink username and password. 
+
+Accessing the command line: On a Mac/Linux machine, you can log into HiPerGator using the "Terminal" application. Once you've opened the Terminal, you can continue to the next step (#1. Logging In and Moving Around). 
+
+
 # 1. Logging In and Moving Around 
 ```
 ssh username@hpg.rc.ufl.edu
