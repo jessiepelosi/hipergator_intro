@@ -150,7 +150,7 @@ Regular Expressions are incredibly helpful and it is worth your time leaning the
 | \t            | tab                       |
 | \n            | new line (line break)     |
 
-To escape characters such as the period (which usually capture any character) and capture just a period, you can put a backslash (\) in front of that character. For example:
+To escape characters such as the period (which usually capture any character) and capture just a period, you can put a backslash (\\) in front of that character. For example:
 
 |RegEx | Captured Characters|
 | ------------- |:-------------------------:|
