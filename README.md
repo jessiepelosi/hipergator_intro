@@ -222,6 +222,26 @@ And finally you want to include your command!
 ```
 mafft --maxiterate 1000 --localpair unaligned.fasta > aligned.fasta 
 ```
+Your full SLURM script would look like this and I like to save them with a ".slurm" file ending.  
+```
+#!/bin/sh
+#SBATCH --job-name=your_job_name       # Job name
+#SBATCH --mail-type=ALL                # Mail events (NONE, BEGIN, END, FAIL, ALL)
+#SBATCH --mail-user=username@ufl.edu   # Where to send mail
+#SBATCH --cpus-per-task=4              # Number of cores: Can also use -c=4
+#SBATCH --mem-per-cpu=2gb              # Per processor memory
+#SBATCH -t 4-00:00:00                  # Walltime
+#SBATCH -o your-job-name.%j.out        # Name output file
+#SBATCH --account=barbazuk             # Cluster account manager 
+#SBATCH --qos=barbazuk-b               # Specify to run on burst (-b) or not 
+#
+
+cd /blue/barbazuk/username
+
+module load mafft/7.407
+
+mafft --maxiterate 1000 --localpair unaligned.fasta > aligned.fasta 
+```
 
 To submit your SLURM job: 
 ```
