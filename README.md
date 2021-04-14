@@ -4,7 +4,13 @@ This is a general introduction for using the University of Florida's HiPerGator 
 
 # 0. Your Computer
 
-You'll need a basic understanding of your own computer before being able to log into HiPerGator. I've split this up into Mac/Linux and Windows. 
+You'll need a basic understanding of your own computer before being able to log into HiPerGator. I've split this up into Mac/Linux and Windows. You'll also want to download a text editor- you shouldn't write code in Microsoft Word! Here are some text editors that I've used before and work pretty well: 
+1. [Sublime Text](https://www.sublimetext.com/) 
+2. [VSCode](https://code.visualstudio.com/)
+3. [Text Wrangler/BBEdit](https://www.barebones.com/products/bbedit/) 
+4. [Notepad++](https://notepad-plus-plus.org/downloads/) 
+
+It is okay to write your code in any of these text editors (or use built-in ones on HiPerGator) and then transfer that text to a Word document to keep track of what you've done. 
 
 <b> Windows </b> 
 
@@ -21,7 +27,6 @@ Accessing the command line: Using the command line on Windows machines is a bit 
 In order to transfer files between your computer and the cluster, you'll need to download a Secure File Transfer Protocol (SFTP) client. A commonly used SFTP client on Mac/Linux machines is [Cyberduck](https://cyberduck.io/). Connect to hpg.rc.ufl.edu using one of these clients following their inscructions. You want omake sure you are connecting through SFTP (you should be connecting through Port 22). Log in with your GatorLink username and password. 
 
 Accessing the command line: On a Mac/Linux machine, you can log into HiPerGator using the "Terminal" application. Once you've opened the Terminal, you can continue to the next step (#1. Logging In and Moving Around). 
-
 
 # 1. Logging In and Moving Around 
 ```
@@ -112,7 +117,70 @@ cd sc
 ```
 Then press Tab on your keyboard: it will autocomplete the name of the directory (since it's the only thing in your main directory that starts with "sc"). Then hit enter! 
 
-# 3. SLURM Jobs 
+# 3. Big Edits 
+
+While `nano` is nice to make edits on small text files, you'll regularly be working with large files thousands of lines long and you won't be able to make edits using just `nano`. In many of these cases, you'll want to find a certain string (a series of characters) in your file and replace it with a different string. For example, imagine you are working with a fasta file that looks like the following and you want to replace `QAIV_1KP_ID:12345679` with the taxon name (e.g., <i> Dryopteris ludoviciana</i>).  
+```
+>QAIV_1KP_ID:123456789 Contig 1
+ACTAGGGGTCAGTGAGTCGATGAGTGTGTGCGTGATCGATCGCCTAGCTAGCTACGTAGC
+>QAIV_1KP_ID:123456789 Contig 2
+AGTCTGATCGATCGATCATAGAACGAATATAGAGCTAGCTAGCTAGCTAATATAAAAAAA
+```
+And so on. You don't want to have to edit every single header individually- that would take way too long! In these cases you can use find-and-replace tools such as `sed`, `awk`, and `grep` to help. I'll summarize these command below. You'll also want to know some basic Regular Expresions (RegEx) for using these tools. Some information about RegEx is at the bottom of this section. 
+
+<b>grep</b> 
+
+`grep` searches through a file looking for a certain pattern. 
+
+<b>awk</b>
+
+<b>sed</b> 
+
+<b>RegEx</b>
+
+Regular Expressions are incredibly helpful and it is worth your time leaning them. These are essentially tools that you can use to find (or capture) a diverse array of characters for find-and-replace commands. Dr. Matt Gitzendanner has put together a very nice series of videos illustrating the power of RegEx and some simple examples [here](https://comptoolsres.github.io/TLCL_3.html). Note that there are some expressions that aren't consistent across platforms. I also prefer to use brackets for some expressions (such as digits). Some of the most common expressions I've used are listed below: 
+
+| RegEx         | Captured Characters       |
+| ------------- |:-------------------------:|
+| [0-9] or \d         | any digit                 | 
+| [A-Z]         | any letter (captial, depending on if that command is case-sensitive)      |
+| [a-z]         | any letter (lowercase, depending on if that command is case-senstitive)   |
+| .             | any character             |
+| \s            | white space               |
+| \t            | tab                       |
+| \n            | new line (line break)     |
+
+To escape characters such as the period (which usually capture any character) and capture just a period, you can put a backslash (\) in front of that character. For example:
+
+|RegEx | Captured Characters|
+| ------------- |:-------------------------:|
+|\\.          | this will capture a period |
+|\\,          |this will capture a comma|
+
+<b>What do brackets do?</b> Brackets can be used to combine multiple expressions. Say you want to capture a digit <u> and</u> a letter. You can include both of the approriate RegEx commands in a pair of brackets, like this `[0-9A-Z]`. 
+
+<b>How do you capture more than one character at a time?</b> There are several quantifiers that you can use to capture several characters at a time. Here is a short list: 
+
+| RegEx         | Number of Captured Characters       |
+| ------------- |:-------------------------:|
+|*              |zero or more |
+|+              |one or more  |
+
+<b>Capturing and keeping parts of a search.</b> Sometimes you don't always want to replace a whole expression, but only part of it. You can keep parts of your expression by closing them in with parentheses. They stored in a variable that you can retrieve either with "1" or "$1". Take our example from above. 
+
+```
+>QAIV_1KP_ID:123456789 Contig 1
+ACTAGGGGTCAGTGAGTCGATGAGTGTGTGCGTGATCGATCGCCTAGCTAGCTACGTAGC
+```
+
+Say we want to capture the `QAIV_1KP_ID:12345679` but want to keep `QAIV`. We can capture `QAIV` and put it in parantheses and then capture the rest of the header but leave it out of the parentheses (in this case, I want to keep "Contig 1"): `([A-Z]+)\_[A-Z\_\:0-9]*`. If we were using sed:
+```
+sed -i 's/([A-Z]+)\_[A-Z\_\:0-9]*/1/g' filename.txt
+```
+
+There are nice tables (cheat sheets) for RegEx [here](https://www.rexegg.com/regex-quickstart.html). You can practice in Sublime Text by doing "Find and Replace" or "ctrl-H". 
+
+# 4. SLURM Jobs 
 
 Since HiPerGator is used by thousands of people across the University, we cannot (generally) run big jobs interactively. If your command can run in less than 10 minutes, uses less than 64 Gb of RAM, and less than 16 cores, you can run it interactively on the log-in nodes (where you end up when you `ssh` into the cluster). Otherwise, you should pass your commands to the scheduler system, called SLURM, that will find the appropriate time and computer(s) to run your job. For almost everything we do, we will be going through the SLURM scheduler.  
 
