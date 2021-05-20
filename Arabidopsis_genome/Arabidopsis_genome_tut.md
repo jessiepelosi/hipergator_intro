@@ -5,7 +5,7 @@ By the end of this tutorial you should be able to:
 2. Generate a genome assembly using both long and short read sequence data 
 
 This is a tutorial for the assembly of the <i> Arabidopsis </i> genome. 
-The first part of this tutorial uses SOAPdenovo to assemble the <i> Arabidopsis </i> genome with short reads, while the second part of the tutorial will use a hybrid assembly approach. 
+The first part of this tutorial uses SOAPdenovo to assemble the <i> Arabidopsis thaliana </i> genome with short reads, while the second part of the tutorial will use a hybrid assembly approach. 
 
 # Short Read Assembly 
 
@@ -13,7 +13,7 @@ Data for this part of the assembly can be found under BioProject [PRJEB14131](ht
 
 | SRA Accession | Instrument  | Layout     |Insert (bp)| Read Length |	Bases       |
 | ------------- |-------------|------------|-----------|-------------|-------------|
-|ERR1424597     | HiSeq 2000	| paired-end | 0         | 100x2        | 17.2 Gb     |
+|ERR1424597     | HiSeq 2000	 | paired-end | 300       | 100x2       | 17.2 Gb     |
 
 
 ## 1. Download the Data
@@ -53,7 +53,7 @@ This is the per-base sequence quality averaged across all the sequence reads. Yo
 This is pretty good too, but you can see that FastQC also highlights parts of the analysis (in this case, the adaptor content) that could be improved with the orange exclamanation point. We'll have to remove the adaptors used in Illumina sequencing in the next step. 
 
 ## 3. Trim and Quality Filter Reads
-First, you will want to remove the adaptors from each read. Adaptors are little sequence fragments that act as a barcode or ID number. They are at the beginning of each read to let the sequencing machine know which reads belong to which sample (**May move some of this explanation above depending on what you plan to say about the FastQC output!**). Since they are not actually a sequence from the genome of the sample, you should remove them before doing any assembly using a program like [`Trimmomatic`](http://www.usadellab.org/cms/?page=trimmomatic). 
+First, you will want to remove the adaptors from each read. Adaptors are little sequence fragments that act as a barcode or ID number. They are at the beginning of each read to let the sequencing machine know which reads belong to which sample. Since they are not actually a sequence from the genome of the sample, you should remove them before doing any assembly using a program like [`Trimmomatic`](http://www.usadellab.org/cms/?page=trimmomatic). 
 
 Read filtering/trimming programs like `Trimmomatic` can also remove reads of poor quality. You will want to do that too; this will ensure that you are using untrustworthy data in the rest of the analysis. (Garbage in, garbage out!) 
 
@@ -61,13 +61,9 @@ When running `Trimmomatic`, you can do adaptor trimming and quality filtering al
 
 ```
 module load trimmomatic/0.39
-trimmomatic PE ERR1424597_1.fastq ERR1424597_2.fastq ERR1424597_1P.fastq ERR1424597_1U.fastq ERR1424597_2P.fastq ERR1424597_2U.fastq ILLUMINACLIP:TruSeq2-PE.fa:2:30:10 ILLUMINACLIP:TruSeq3-PE.fa:2:30:10 HEADCROP:5 SLIDINGWINDOW:4:20 MINLEN:36
-```
-```
-module load trimmomatic
-trimmomatic PE --phred33 input_forward.fq.gz input_reverse.fq.gz output_forward_paired.fq.gz \
-output_forward_unpaired.fq.gz output_reverse_paired.fq.gz output_reverse_unpaired.fq.gz \
-ILLUMINACLIP:${HPC_TRIMMOMATIC_ADAPTER}/TruSeq3-PE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36
+trimmomatic PE ERR1424597_1.fastq ERR1424597_2.fastq \
+ERR1424597_1P.fastq ERR1424597_1U.fastq ERR1424597_2P.fastq ERR1424597_2U.fastq \
+ILLUMINACLIP:TruSeq2-PE.fa:2:30:10 ILLUMINACLIP:TruSeq3-PE.fa:2:30:10 HEADCROP:5 SLIDINGWINDOW:4:20 MINLEN:36
 ```
 
 Let's break down what each of these arguments mean (**May move some of this explanation above depending on what you plan to say about the FastQC output!**):
@@ -75,23 +71,21 @@ Let's break down what each of these arguments mean (**May move some of this expl
 * <b>phred</b>: A [phred score](https://en.wikipedia.org/wiki/Phred_quality_score) estimates the quality of the read on a logarithmic scale. We specified a minimum phred score of 33, which translates to about a 1 in 2000 chance of a base call in the read being wrong. Standard values for minimum phred scores usually range between 30 and 35.
 * <b>unpaired output files</b>: Sometimes `Trimmomatic` will toss out a one read in a pair but not the other. The remaining read becomes unpaired, but can still be used in subsequent analyses, so it outputs them in unpaired read files.
 * <b>ILLUMINACLIP</b>: This is the portion of the program call used to trim away the read adaptors.
-    * Adaptor name here: This is the file which tells `Trimmomatic` what sequences are part of the adaptors, and therefore what to remove.
-    * <b>LEADING</b>: 
-    * <b>TRAILING</b>:
-    * <b>SLIDINGWINDOW</b>:
+    * TruSeq2/TruSeq3: This is the file which tells `Trimmomatic` what sequences are part of the adaptors, and therefore what to remove. We have included these in this GitHub repository, but they can also be accessed using the `${HPC_TRIMMOMATIC_ADAPTOR}` variable. 
+    * <b>HEADCROP</b>: Removes the first `x` bases from each read regardless of quality. In this case, we'll remove the first five bases. 
+    * <b>SLIDINGWINDOW</b>: Removes bases (in groups of four) that have an average quality less than 20. 
     * <b>MINLEN</b>: `Trimmomatic` will toss any reads that are shorter than 36 base pairs after it is done cutting off the adaptor and poor-quality bases on the end of the reads.
+
+Trimmomatic works in order of the command you give it, so you'll get different results if you switch around the order of these commands. 
 
 After you're done trimming and filtering reads, you'll want to check their quality again in `FastQC`.
 ``` 
 module load fastqc
-fastqc *.fastq
+fastqc *P.fastq
 ```
-Take a look at your results -- did the quality of your reads improve?
+Take a look at your results -- did the quality of your reads improve?  The output from FastQC for ERR1424597_1P.fastq should look something like this (I've only displayed the first frame of the output file): 
 
-We are working with paired-end reads so we want to tell Trimmomatic to work in "paired-end mode" (`PE`). We then include the names of the input files (`ERR1424597_1.fastq ERR1424597_2.fastq`) and the output files- note that Trimmomatic will output paired reads (`ERR1424597_1P.fastq`) and unpaired reads (`ERR1424597_1U.fastq`). For our downstream analyses, we'll want to use the paired-end read files. Then we'll tell Trimmomatic to remove adaptor sequences (`ILLUMINACLIP:TruSeq2-PE.fa:2:30:10 ILLUMINACLIP:TruSeq3-PE.fa:2:30:10`), remove the first 5 bases of each read regardless of quality (`HEADCROP:5`), use a sliding window to remove bases (in groups of four) that have an average quality less than 20 (`SLIDINGWINDOW:4:20`), and only retain reads that are longer than 36 bp (`MINLEN:36`). Trimmomatic works in order of the command you give it, so you'll get different results if you switch around the order of these commands. 
-
-Once you've run Trimmomatic, you'll want to re-run FastQC to make sure the reads look good! After trimming the reads, the output from FastQC for ERR1424597_1P.fastq should look something like this (I've only displayed the first frame of the output file): 
-
+![Filtered reads per-base sequence content](https://github.com/jessiepelosi/hipergator_intro/blob/main/Arabidopsis_genome/Arabid_fastqc3.PNG "Filtered reads per-base sequence content")
 
 ## 4. Filter Reads for Contamination
 In addition to removing poor quality reads, you will also want to remove any reads that do not belong to the nuclear genome of your sample. You may recall that due to endosymbiosis, organelles (mitochondria, chloroplasts) have their own genomes separate from the nuclear genome. Because mitochondria and chloroplasts are so much more numerous than nuclei, you are inevitably going to get reads from their genomes in your dataset along with your nuclear reads. Since they're from separate genomes, they should be separated from your nuclear reads before assembly.
