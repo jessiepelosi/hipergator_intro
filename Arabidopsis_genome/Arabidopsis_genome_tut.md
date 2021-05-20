@@ -18,7 +18,7 @@ Data for this part of the assembly can be found under BioProject [PRJNA311266](h
 |SRR3156163     | HiSeq 2000	| mate-pairs | 8,000     | 100x2       |51,332,776  | 9,790       |
 |SRR3156596     | HiSeq 2000	| mate-pairs | 20,000    | 100x2       |61,030,552  | 11,640      |
 
-<b> 1. Download the Data </b> 
+## 1. Download the Data
  
 First, make a new directory to hold the data you will be working with. 
 ```
@@ -35,7 +35,9 @@ fasterq-dump SRR3156163 --split-files
 fasterq-dump SRR3156596 --split-files
 ```
 
-<b> 2. Quality Check </b> 
+> <u>Note:</u> Once you have retrieved the raw reads, you may want to make a directory to keep them in by themselves for organizational purposes. You may also want to do the same with each step below just so you know which files belong to each step. However, the way you organize is ultimately up to you -- you will figure out an organization system that works for you with practice!
+
+## 2. Quality Check
 
 Next, you'll need to check the data to make sure they look alright to use for the assembly in a "quality check" step. This is done with [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/). FastqQC is a light-weight program written in Java that is used to check the quality of sequence data.
 Sequence data are commonly written in fastq and fasta file formats - fastq files contain information about the quality of each base pair while fasta files do not contain this information. The IT staff for HiPerGator have written a wrapper script to simplify the commands for us. 
@@ -45,4 +47,12 @@ fastqc *.fastq
 ```
 The output from FastQC is an HTML file for each input file. You'll need to download these to your local computer and then open them (an internet Browser like Chrome should work). 
 
- 
+## 3. Trim and Quality Filter Reads
+
+## 4. Filter Reads for Contamination
+
+## 5. Estimate Genome Size
+
+## 6. Genome Assembly
+
+## 7. Assess Assembly Quality
