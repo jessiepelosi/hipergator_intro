@@ -35,7 +35,7 @@ fasterq-dump SRR3156163 --split-files
 fasterq-dump SRR3156596 --split-files
 ```
 
-> <u>Note:</u> Once you have retrieved the raw reads, you may want to make a directory to keep them in by themselves for organizational purposes. You may also want to do the same with each step below just so you know which files belong to each step. However, the way you organize is ultimately up to you -- you will figure out an organization system that works for you with practice!
+> Note: Once you have retrieved the raw reads, you may want to make a directory to keep them in by themselves for organizational purposes. You may also want to do the same with each step below just so you know which files belong to each step. However, the way you organize is ultimately up to you -- you will figure out an organization system that works for you with practice!
 
 ## 2. Quality Check
 
@@ -45,9 +45,32 @@ Sequence data are commonly written in fastq and fasta file formats - fastq files
 module load fastqc
 fastqc *.fastq
 ```
-The output from FastQC is an HTML file for each input file. You'll need to download these to your local computer and then open them (an internet Browser like Chrome should work). 
+The output from `FastQC` is an HTML file for each input file. You'll need to download these to your local computer and then open them (an internet Browser like Chrome should work). 
 
 ## 3. Trim and Quality Filter Reads
+First, you will want to remove the adaptors from each read. Adaptors are little sequence fragments that act as a barcode or ID number. They are at the beginning of each read to let the sequencing machine know which reads belong to which sample (**May move some of this explanation above depending on what you plan to say about the FastQC output!**). Since they are not actually a sequence from the genome of the sample, you should remove them before doing any assembly using a program like [`Trimmomatic`](http://www.usadellab.org/cms/?page=trimmomatic). 
+
+Read filtering/trimming programs like `Trimmomatic` can also remove reads of poor quality. You will want to do that too; this will ensure that you are using untrustworthy data in the rest of the analysis. (Garbage in, garbage out!) 
+
+When running `Trimmomatic`, you can do adaptor trimming and quality filtering all at once. Since our reads are <b>paired-end</b>, you will need to use the paired-end option in `Trimmomatic` and indicate that the corresponding paired-end files should be matched together in your call to the program, like so:
+
+'''
+module load trimmomatic
+trimmomatic PE --phred33 input_forward.fq.gz input_reverse.fq.gz output_forward_paired.fq.gz \
+output_forward_unpaired.fq.gz output_reverse_paired.fq.gz output_reverse_unpaired.fq.gz \
+ILLUMINACLIP:${HPC_TRIMMOMATIC_ADAPTER}/TruSeq3-PE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36
+'''
+
+Let's break down what each of these arguments mean (**May move some of this explanation above depending on what you plan to say about the FastQC output!**):
+* <b>PE</b>: run `Trimmomatic` for paired-end sequences
+* <b>phred</b>: [phred scores](https://en.wikipedia.org/wiki/Phred_quality_score) estimate the quality of the read on a logarithmic scale. We specified a minimum phred score of 33, which translates to about a 1 in 2000 chance of a base call in the read being wrong. Standard values for minimum phred scores usually range between 30 and 35.
+* <b>unpaired output files</b>: Sometimes `Trimmomatic` will toss out a one read in a pair but not the other. The remaining read becomes unpaired, but can still be used in subsequent analyses, so it outputs them in unpaired read files.
+* <b>ILLUMINACLIP</b>: This is the portion of the program call used to trim away the read adaptors.
+    * Adaptor name here: This is the file which tells `Trimmomatic` what sequences are part of the adaptors, and therefore what to remove.
+    * <b>LEADING</b>: 
+    * <b>TRAILING</b>:
+    * <b>SLIDINGWINDOW</b>:
+    * <b>MINLEN</b>: `Trimmomatic` will toss any reads that are shorter than 36 base pairs after it is done cutting off the adaptor and poor-quality bases on the end of the reads.
 
 ## 4. Filter Reads for Contamination
 
@@ -56,3 +79,7 @@ The output from FastQC is an HTML file for each input file. You'll need to downl
 ## 6. Genome Assembly
 
 ## 7. Assess Assembly Quality
+
+# Long and Short Read Assembly
+
+Under construction!
