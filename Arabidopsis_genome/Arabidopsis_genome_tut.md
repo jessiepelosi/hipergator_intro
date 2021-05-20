@@ -54,16 +54,16 @@ Read filtering/trimming programs like `Trimmomatic` can also remove reads of poo
 
 When running `Trimmomatic`, you can do adaptor trimming and quality filtering all at once. Since our reads are <b>paired-end</b>, you will need to use the paired-end option in `Trimmomatic` and indicate that the corresponding paired-end files should be matched together in your call to the program, like so:
 
-'''
+```
 module load trimmomatic
 trimmomatic PE --phred33 input_forward.fq.gz input_reverse.fq.gz output_forward_paired.fq.gz \
 output_forward_unpaired.fq.gz output_reverse_paired.fq.gz output_reverse_unpaired.fq.gz \
 ILLUMINACLIP:${HPC_TRIMMOMATIC_ADAPTER}/TruSeq3-PE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36
-'''
+```
 
 Let's break down what each of these arguments mean (**May move some of this explanation above depending on what you plan to say about the FastQC output!**):
-* <b>PE</b>: run `Trimmomatic` for paired-end sequences
-* <b>phred</b>: [phred scores](https://en.wikipedia.org/wiki/Phred_quality_score) estimate the quality of the read on a logarithmic scale. We specified a minimum phred score of 33, which translates to about a 1 in 2000 chance of a base call in the read being wrong. Standard values for minimum phred scores usually range between 30 and 35.
+* <b>PE</b>: Run `Trimmomatic` for paired-end sequences
+* <b>phred</b>: A [phred score](https://en.wikipedia.org/wiki/Phred_quality_score) estimates the quality of the read on a logarithmic scale. We specified a minimum phred score of 33, which translates to about a 1 in 2000 chance of a base call in the read being wrong. Standard values for minimum phred scores usually range between 30 and 35.
 * <b>unpaired output files</b>: Sometimes `Trimmomatic` will toss out a one read in a pair but not the other. The remaining read becomes unpaired, but can still be used in subsequent analyses, so it outputs them in unpaired read files.
 * <b>ILLUMINACLIP</b>: This is the portion of the program call used to trim away the read adaptors.
     * Adaptor name here: This is the file which tells `Trimmomatic` what sequences are part of the adaptors, and therefore what to remove.
@@ -72,7 +72,34 @@ Let's break down what each of these arguments mean (**May move some of this expl
     * <b>SLIDINGWINDOW</b>:
     * <b>MINLEN</b>: `Trimmomatic` will toss any reads that are shorter than 36 base pairs after it is done cutting off the adaptor and poor-quality bases on the end of the reads.
 
+After you're done trimming and filtering reads, you'll want to check their quality again in `FastQC`.
+``` 
+module load fastqc
+fastqc *.fastq
+```
+Take a look at your results -- did the quality of your reads improve?
+
 ## 4. Filter Reads for Contamination
+In addition to removing poor quality reads, you will also want to remove any reads that do not belong to the nuclear genome of your sample. You may recall that due to endosymbiosis, organelles (mitochondria, chloroplasts) have their own genomes separate from the nuclear genome. Because mitochondria and chloroplasts are so much more numerous than nuclei, you are inevitably going to get reads from their genomes in your dataset along with your nuclear reads. Since they're from separate genomes, they should be separated from your nuclear reads before assembly.
+
+First, let's download reference sequences for the <i> Arabidopsis </i> [chloroplast](https://www.ncbi.nlm.nih.gov/nucleotide/NC_000932.1) and [mitochondrial](https://www.ncbi.nlm.nih.gov/nucleotide/NC_037304.1) genome.
+
+```
+# chloroplast
+wget https://www.ncbi.nlm.nih.gov/kis/download/sequence/?db=nucleotide&id=NC_000932.1
+
+# mitochondrion
+wget https://www.ncbi.nlm.nih.gov/kis/download/sequence/?db=nucleotide&id=NC_037304.1
+```
+
+> Note: If you end up doing genome assembly with an organism that doesn't have these references available, you can download a reference from a close relative instead.
+
+Now that you have a reference, you will need to map your reads to the reference genomes. This will tell you which reads match with sequences and where they match in the reference. There are many different mapping programs; we will be using Bowtie2 since it is optimized for mapping short reads to long references.
+
+```
+module load bowtie2
+bowtie2 
+```
 
 ## 5. Estimate Genome Size
 
