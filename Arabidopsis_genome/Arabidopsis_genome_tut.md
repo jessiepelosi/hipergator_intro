@@ -126,10 +126,11 @@ organelle_db.rev.2.bt2
 This means your indexing worked, so you can move on to mapping your reads. If you check the [documentation](http://bowtie-bio.sourceforge.net/bowtie2/manual.shtml#the-bowtie2-build-indexer), `Bowtie2` has a ton of options for adjusting how the read mapping proceeds, but we will be keeping things simple.
 
 ```
-bowtie2 -q --end-to-end -x organelle_db -1 ERR1424597_1P.fastq -2 ERR1424597_2P.fastq --un-conc ERR1424597_filtered -S ERR1424597_mapped_to_org.sam
+bowtie2 -p 8 -q --end-to-end -x organelle_db -1 ERR1424597_1P.fastq -2 ERR1424597_2P.fastq --un-conc ERR1424597_filtered -S ERR1424597_mapped_to_org.sam
 ```
 
 Let's break down the arguments:
+* <b>p</b>: Tells the program how many threads you want to run in parallel. Remember to request this many cpus in your job if specify more than 1!
 * <b>q</b>: Tells the program that the input files you're giving it are in `fastq` format.
 * <b>end-to-end</b>: This specifies the type of alignment we want to do. End-to-end alignment tries to find the best match in the reference sequence for the <i>entire</i> read that it is mapping, rather than just a portion.
 * <b>x</b>: The name of the index database of your reference sequences that you created in the previous step.
@@ -168,9 +169,21 @@ Note that Jellyfish is quite computationally expensive! You'll want to make sure
 
 Once you've generated the read histogram from Jellyfish, you can upload the reads.histo file to [GenomeScope](http://qb.cshl.edu/genomescope/). GenomeScope uses a modelling approach to estimate genome heterozygosity, repeat content, and size from sequencing reads using a kmer-based statistical approach. You can also do write a short R script to estimate genome size following [this tutorial](http://koke.asrc.kanazawa-u.ac.jp/HOWTO/kmer-genomesize.html).
 
+
 ## 6. Genome Assembly 
 
-Estimate best k-mer? 
+Genome assembly programs employ algorithms which use <b>De Bruijn graphs</b> to figure out what reads fit together into a <b>contig</b>. De Bruijn graphs map the relationship between <b>k-mers</b>, so you will need to tell your assembler the size of the k-mers you want it to use. We will figure this out using the program `kmergenie`.
+
+```
+module load kmergenie
+# Create list of file inputs for kmergenie to read
+ls -1 ERR1424597_filtered.*.fastq > file_list.txt
+# Run kmergenie with 8 threads, output files use the prefix kmer_assembl_est
+$KMG_DIR/kmergenie file_list.txt -o kmer_assembl_est -t 8
+```
+
+Now check the log file from your job. What k-mer size is optimal for this assembly?
+You should have gotten *INSERT K-MER SIZE HERE*. Now we can move on to actually assembling the genome.
 
 [SOAPdenovo](https://github.com/aquaskyline/SOAPdenovo2) is a commonly used short-read genome assembly program. It is relatively easy to use once you've gotten the configuration file set up. This is what the config file for this assembly could look like: 
 ```
@@ -194,14 +207,97 @@ q2=/path/**LIBNAMEA**/ERR1424597_2P.fastq
 To run the program (all parts) use the command: 
 ```
 module load soapdenovo
-SOAPdenovo all -s file.config -K 33 -R -p 64 -N 135000000 -o A.thaliana.33mer 1>ass.log 2>A.thaliana.33mer.err 
+SOAPdenovo all -s file.config -K 33 -R -p 64 -N 135000000 -o A.thaliana.33mer 1>assemb.log 2>A.thaliana.33mer.err 
 ```
 This program also uses a lot of RAM and time to run, so make sure to allocate enough resources in your SLURM script. 
 
+Once your job is done, take a look at the scafStatistics file produced by `SOAPdenovo`. What is the total size of your assembly? What is the mean size of your scaffolds, and how many are larger than 1000 bp? 10,000 bp?
+
+In a perfect world, genome assemblers would produce 1 scaffold for each chromosome. Arabidopsis has 5. We are a *long* way from perfect here! Why do you think the genome assembly is in so many little pieces?
+
 
 ## 7. Assess Assembly Quality
+Now that you've assembled the genome, you will want to assess it to figure out how well you did. One way of doing this is counting how many genes are present in your assembly that you expect to be there. To do this, we will use a pipeline called [BUSCO](https://busco.ezlab.org/). Genes assessed by `BUSCO` are conserved across almost all of the Tree of Life, so if they are missing, you can probably assume that it is because your genome assembly is incomplete rather than because your organism doesn't have that gene.
 
-# Long and Short Read Assembly
+You will need to create a config file called `config.ini` to run `BUSCO` properly. This configuration file will have all the options you would normally pass to the function directly in the command line; a config file for complicated programs like `BUSCO` just keeps all your code looking a bit neater. Here is how your config file will look (feel free to copy and paste):
 
-Under construction!
+```
+[busco_run]
+# Path to the BUSCO dataset
+lineage_dataset = embryophyta_odb10
+# Which mode to run (genome / proteins / transcriptome)
+mode = genome
+# How many threads to use for multithreaded steps
+cpu = 8
+# Force rewrite if files already exist (True/False)
+force = True
+# BLAST e-value
+evalue = 1e-3
+# Augustus long mode for retraining (True/False)
+long = False
+# Local destination path for downloaded lineage datasets
+download_path = /ufrc/data/reference/busco/4.0
+# Run offline
+offline=True
+# Download most recent BUSCO data and files
+update-data = False
+
+[tblastn]
+path = /apps/busco/4.0.6/bin/
+command = tblastn
+
+[makeblastdb]
+path = /apps/busco/4.0.6/bin/
+command = makeblastdb
+
+[augustus]
+path = /apps/busco/4.0.6/bin/
+command = augustus
+
+[etraining]
+path = /apps/busco/4.0.6/bin/
+command = etraining
+
+[gff2gbSmallDNA.pl]
+path = /apps/busco/4.0.6/bin/
+command = gff2gbSmallDNA.pl
+
+[new_species.pl]
+path = /apps/busco/4.0.6/bin/
+command = new_species.pl
+
+[optimize_augustus.pl]
+path = /apps/busco/4.0.6/bin/
+command = optimize_augustus.pl
+
+[hmmsearch]
+path = /apps/busco/4.0.6/bin/
+command = hmmsearch
+
+[sepp]
+path = /apps/busco/4.0.6/bin/
+command = run_sepp.py
+
+[prodigal]
+path = /apps/busco/4.0.6/bin/
+command = prodigal
+```
+
+Save the above to `config.ini`. There are many other options for running BUSCO, but we will not need them for now since you are doing a simple completeness assessment. You can see some of the other options if you look through the documentation.
+
+Now let's run the program. `BUSCO` is doing a lot of complicated stuff under the hood, so it will need a lot of memory and time. (**Give estimates here**).
+
+```
+module load busco
+# create a Linux variable so that BUSCO will know where the config file is
+export BUSCO_CONFIG_FILE="/ufrc/soltis/kasey.pham/tprat_genome/busco/config.ini"
+# create a Linux variable so that BUSCO will know where one of its dependent programs is
+export AUGUSTUS_CONFIG_PATH="/ufrc/soltis/kasey.pham/tprat_genome/busco/augustus_config"
+
+busco -f -i 
+```
+
+Now take a look at the end of your output log file from the job. `BUSCO` should have printed a summary of what it found. What is the total completeness of your genome? How many complete single copy genes did `BUSCO` recover? How many fragments? How many are missing?
+
+From this and your N50 score during assembly, how good do you think your assembly is?
 
