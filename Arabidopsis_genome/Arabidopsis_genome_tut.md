@@ -66,7 +66,7 @@ ERR1424597_1P.fastq ERR1424597_1U.fastq ERR1424597_2P.fastq ERR1424597_2U.fastq 
 ILLUMINACLIP:TruSeq2-PE.fa:2:30:10 ILLUMINACLIP:TruSeq3-PE.fa:2:30:10 HEADCROP:5 SLIDINGWINDOW:4:20 MINLEN:36
 ```
 
-Let's break down what each of these arguments mean (**May move some of this explanation above depending on what you plan to say about the FastQC output!**):
+Let's break down what each of these arguments mean:
 * <b>PE</b>: Run `Trimmomatic` for paired-end sequences
 * <b>phred</b>: A [phred score](https://en.wikipedia.org/wiki/Phred_quality_score) estimates the quality of the read on a logarithmic scale. We specified a minimum phred score of 33, which translates to about a 1 in 2000 chance of a base call in the read being wrong. Standard values for minimum phred scores usually range between 30 and 35.
 * <b>unpaired output files</b>: Sometimes `Trimmomatic` will toss out a one read in a pair but not the other. The remaining read becomes unpaired, but can still be used in subsequent analyses, so it outputs them in unpaired read files.
@@ -88,7 +88,7 @@ Take a look at your results -- did the quality of your reads improve?  The outpu
 ![Filtered reads per-base sequence content](https://github.com/jessiepelosi/hipergator_intro/blob/main/Arabidopsis_genome/Arabid_fastqc3.PNG "Filtered reads per-base sequence content")
 
 ## 4. Filter Reads for Contamination
-In addition to removing poor quality reads, you will also want to remove any reads that do not belong to the nuclear genome of your sample. You may recall that due to endosymbiosis, organelles (mitochondria, chloroplasts) have their own genomes separate from the nuclear genome. Because mitochondria and chloroplasts are so much more numerous than nuclei, you are inevitably going to get reads from their genomes in your dataset along with your nuclear reads. Since they're from separate genomes, they should be separated from your nuclear reads before assembly.
+In addition to removing poor quality reads, you will also want to remove any reads that do not belong to the nuclear genome of your sample. ([Steps adapted from this tutorial.](https://sites.google.com/site/wiki4metagenomics/tools/short-read/remove-host-sequences)) You may recall that due to endosymbiosis, organelles (mitochondria, chloroplasts) have their own genomes separate from the nuclear genome. Because mitochondria and chloroplasts are so much more numerous than nuclei, you are inevitably going to get reads from their genomes in your dataset along with your nuclear reads. Since they're from separate genomes, they should be separated from your nuclear reads before assembly.
 
 First, let's download reference sequences for the <i> Arabidopsis </i> [chloroplast](https://www.ncbi.nlm.nih.gov/nucleotide/NC_000932.1) and [mitochondrial](https://www.ncbi.nlm.nih.gov/nucleotide/NC_037304.1) genome.
 
@@ -102,11 +102,58 @@ wget https://www.ncbi.nlm.nih.gov/kis/download/sequence/?db=nucleotide&id=NC_037
 
 > Note: If you end up doing genome assembly with an organism that doesn't have these references available, you can download a reference from a close relative instead.
 
-Now that you have a reference, you will need to map your reads to the reference genomes. This will tell you which reads match with sequences and where they match in the reference. There are many different mapping programs; we will be using Bowtie2 since it is optimized for mapping short reads to long references.
+Now that you have a reference, you will need to map your reads to the reference genomes. This will tell you which reads match with sequences and where they match in the reference. There are many different mapping programs; we will be using `Bowtie2` since it is optimized for mapping short reads to long references.
+
+The first step when using `Bowtie2` is to build an <b>index</b> for the <b>reference sequences</b> that you are mapping to. This creates a set of files which allow the program to work faster when it actually maps all of your reads.
 
 ```
 module load bowtie2
-bowtie2 
+bowtie2-build NC_000932.1.fasta,NC_037304.1.fasta organelle_db
+ls
+```
+
+In the call to the index builder, we first pass it the two organelle genomes we downloaded and then give it a base name for the resulting index files. You should now see the following files in your directory:
+
+```
+organelle_db.1.bt2
+organelle_db.2.bt2
+organelle_db.3.bt2
+organelle_db.4.bt2
+organelle_db.rev.1.bt2
+organelle_db.rev.2.bt2
+```
+
+This means your indexing worked, so you can move on to mapping your reads. If you check the [documentation](http://bowtie-bio.sourceforge.net/bowtie2/manual.shtml#the-bowtie2-build-indexer), `Bowtie2` has a ton of options for adjusting how the read mapping proceeds, but we will be keeping things simple.
+
+```
+bowtie2 -q --end-to-end -x organelle_db -1 ERR1424597_1P.fastq -2 ERR1424597_2P.fastq --un-conc ERR1424597_filtered -S ERR1424597_mapped_to_org.sam
+```
+
+Let's break down the arguments:
+* <b>q</b>: Tells the program that the input files you're giving it are in `fastq` format.
+* <b>end-to-end</b>: This specifies the type of alignment we want to do. End-to-end alignment tries to find the best match in the reference sequence for the <i>entire</i> read that it is mapping, rather than just a portion.
+* <b>x</b>: The name of the index database of your reference sequences that you created in the previous step.
+* <b>1</b>: The forward-facing half of the read pair set to be mapped.
+* <b>2</b>: The backwards-facing half of the read pair set to be mapped.
+* <b>un-conc</b>: This tells the program to output the unmapped reads to a set of files with the label provided, ERR1424597_filtered.
+* <b>S</b>: This tells the program to output all results to a `sam` type file with the name ERR1424597_mapped_to_org.sam
+
+We are actually just interested in the <i>unmapped</i> reads, as these are the nuclear reads that we will want to use in our genome assembly! They are in the `sam` format, though, and we will want to convert them back to `fastq` before moving onto the next step.
+
+```
+module load samtools
+
+# Convert sam file to bam file
+samtools view ERR1424597_filtered.1 --output-fmt bam > ERR1424597_filtered.1.bam
+samtools view ERR1424597_filtered.2 --output-fmt bam > ERR1424597_filtered.2.bam
+
+# Convert bam file to fastq file
+samtools fastq ERR1424597_filtered.1.bam > ERR1424597_filtered.1.fastq
+samtools fastq ERR1424597_filtered.2.bam > ERR1424597_filtered.2.fastq
+
+# Clean up some of files you won't need anymore
+rm ERR1424597_filtered.1
+rm ERR1424597_filtered.2
 ```
 
 ## 5. Estimate Genome Size 
@@ -114,12 +161,12 @@ bowtie2
 Next, you'll want to estimate the genome size using k-mers, which are short substrings of length contained within a DNA sequence. We first have to count k-mers of a certain length (most commonly we use 17 or 21bp k-mers, which can also be written as 17-mer and 21-mer). We'll use [Jellyfish](http://www.genome.umd.edu/jellyfish.html#:~:text=Jellyfish%20is%20a%20tool%20for,of%20k%2Dmers%20in%20DNA.&text=Jellyfish%20is%20a%20command%2Dline,the%20%22jellyfish%20dump%22%20command.) for this step. 
 ```
 module load jellyfish/2.3.0
-jellyfish count -C -m 21 -s 1000000000 -t 10 *P.fastq -o reads.jf
+jellyfish count -C -m 21 -s 1000000000 -t 10 ERR1424597_filtered.*.fastq -o reads.jf
 jellyfish histo -t 10 reads.jf > reads.histo
 ```
 Note that Jellyfish is quite computationally expensive! You'll want to make sure to allocate a lot of memory in your SLURM script (this job took XGb of RAM and X hours when I ran it).  
 
-Once you've generated the read histogram from Jellyfish, you can upload the reads.histo file to [GenomeScope](http://qb.cshl.edu/genomescope/). GenomeScope uses a modelling approach to estimate genome heterozygosity, repeat content, and size from sequencing reads using a kmer-based statistical approach. You can also do write a short R script to estimate genome size following [this tutorial](http://koke.asrc.kanazawa-u.ac.jp/HOWTO/kmer-genomesize.html).  
+Once you've generated the read histogram from Jellyfish, you can upload the reads.histo file to [GenomeScope](http://qb.cshl.edu/genomescope/). GenomeScope uses a modelling approach to estimate genome heterozygosity, repeat content, and size from sequencing reads using a kmer-based statistical approach. You can also do write a short R script to estimate genome size following [this tutorial](http://koke.asrc.kanazawa-u.ac.jp/HOWTO/kmer-genomesize.html).
 
 ## 6. Genome Assembly 
 
@@ -127,20 +174,20 @@ Estimate best k-mer?
 
 [SOAPdenovo](https://github.com/aquaskyline/SOAPdenovo2) is a commonly used short-read genome assembly program. It is relatively easy to use once you've gotten the configuration file set up. This is what the config file for this assembly could look like: 
 ```
-#maximal read length
+# maximal read length
 max_rd_len=100
 [LIB]
-#average insert size
+# average insert size
 avg_ins=300
-#if sequence needs to be reversed
+# if sequence needs to be reversed
 reverse_seq=0
-#in which part(s) the reads are used
+# in which part(s) the reads are used
 asm_flags=3
 # cutoff of pair number for a reliable connection (at least 3 for short insert size)
 pair_num_cutoff=3
-#minimum aligned length to contigs for a reliable read location (at least 32 for short insert size)
+# minimum aligned length to contigs for a reliable read location (at least 32 for short insert size)
 map_len=32
-#a pair of fastq files, read 1 file should always be followed by read 2 file
+# a pair of fastq files, read 1 file should always be followed by read 2 file
 q1=/path/**LIBNAMEA**/ERR1424597_1P.fastq
 q2=/path/**LIBNAMEA**/ERR1424597_2P.fastq
 ``` 
