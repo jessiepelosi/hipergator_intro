@@ -44,7 +44,7 @@ The output from `FastQC` is an HTML file for each input file. You'll need to dow
 
 Here are two parts of the output file that are used most often (these are from the forward reads, ERR1424597_1.fastq). 
 
-![Per-base sequence quality (the first frame from the output of FastQC](https://github.com/jessiepelosi/hipergator_intro/blob/main/Arabidopsis_genome/Arabid_fastqc1.PNG "Per-Base Sequence Quality")
+![Per-base sequence quality (the first frame from the output of `FastQC`](https://github.com/jessiepelosi/hipergator_intro/blob/main/Arabidopsis_genome/Arabid_fastqc1.PNG "Per-Base Sequence Quality")
 
 This is the per-base sequence quality averaged across all the sequence reads. You ideally want all your reads above Q28, in the green area, but it is okay if some of them fall into the yellow. 
 
@@ -204,10 +204,10 @@ map_len=32
 q1=/path/**LIBNAMEA**/ERR1424597_1P.fastq
 q2=/path/**LIBNAMEA**/ERR1424597_2P.fastq
 ``` 
-To run the program (all parts) use the command: 
+To run the program (all parts) use the command: (**Don't forget to change the kmer size here!!**)
 ```
 module load soapdenovo
-SOAPdenovo all -s file.config -K 33 -R -p 64 -N 135000000 -o A.thaliana.33mer 1>assemb.log 2>A.thaliana.33mer.err 
+SOAPdenovo all -s file.config -K 33 -R -p 64 -N 135000000 -o athaliana_soap 1> assemb.log 2> athaliana_soap.err 
 ```
 This program also uses a lot of RAM and time to run, so make sure to allocate enough resources in your SLURM script. 
 
@@ -294,7 +294,7 @@ export BUSCO_CONFIG_FILE="/ufrc/soltis/kasey.pham/tprat_genome/busco/config.ini"
 # create a Linux variable so that BUSCO will know where one of its dependent programs is
 export AUGUSTUS_CONFIG_PATH="/ufrc/soltis/kasey.pham/tprat_genome/busco/augustus_config"
 
-busco -f -i 
+busco -f -i athaliana_soap.contig -o athaliana_busco
 ```
 
 Now take a look at the end of your output log file from the job. `BUSCO` should have printed a summary of what it found. What is the total completeness of your genome? How many complete single copy genes did `BUSCO` recover? How many fragments? How many are missing?
