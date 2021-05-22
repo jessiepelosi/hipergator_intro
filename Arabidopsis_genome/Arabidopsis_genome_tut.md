@@ -94,10 +94,11 @@ First, let's download reference sequences for the <i> Arabidopsis </i> [chloropl
 
 ```
 # chloroplast
-wget https://www.ncbi.nlm.nih.gov/kis/download/sequence/?db=nucleotide&id=NC_000932.1
+wget "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_000932.1&rettype=fasta" -O NC_000932.1.fa
 
 # mitochondrion
-wget https://www.ncbi.nlm.nih.gov/kis/download/sequence/?db=nucleotide&id=NC_037304.1
+wget "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=NC_037304.1&rettype=fasta" -O NC_037304.1.fa
+
 ```
 
 > Note: If you end up doing genome assembly with an organism that doesn't have these references available, you can download a reference from a close relative instead.
@@ -108,7 +109,7 @@ The first step when using `Bowtie2` is to build an <b>index</b> for the <b>refer
 
 ```
 module load bowtie2
-bowtie2-build NC_000932.1.fasta,NC_037304.1.fasta organelle_db
+bowtie2-build NC_000932.1.fa,NC_037304.1.fa organelle_db
 ls
 ```
 
