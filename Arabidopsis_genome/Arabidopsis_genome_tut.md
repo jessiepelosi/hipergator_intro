@@ -87,6 +87,13 @@ Take a look at your results -- did the quality of your reads improve?  The outpu
 
 ![Filtered reads per-base sequence content](https://github.com/jessiepelosi/hipergator_intro/blob/main/Arabidopsis_genome/Arabid_fastqc3.PNG "Filtered reads per-base sequence content")
 
+You won't be using the files you originally downloaded from SRA or the unpaired reads, so we can compress those so they don't take up too much space on the cluster. You can do this by: 
+```
+gzip *U.fastq
+gzip *1.fastq
+gzip *2.fastq
+```
+
 ## 4. Filter Reads for Contamination
 In addition to removing poor quality reads, you will also want to remove any reads that do not belong to the nuclear genome of your sample. ([Steps adapted from this tutorial.](https://sites.google.com/site/wiki4metagenomics/tools/short-read/remove-host-sequences)) You may recall that due to endosymbiosis, organelles (mitochondria, chloroplasts) have their own genomes separate from the nuclear genome. Because mitochondria and chloroplasts are so much more numerous than nuclei, you are inevitably going to get reads from their genomes in your dataset along with your nuclear reads. Since they're from separate genomes, they should be separated from your nuclear reads before assembly.
 
