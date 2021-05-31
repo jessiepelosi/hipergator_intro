@@ -161,6 +161,12 @@ samtools fastq ERR1424597_filtered.1.bam > ERR1424597_filtered.1.fastq
 samtools fastq ERR1424597_filtered.2.bam > ERR1424597_filtered.2.fastq
 
 # Clean up some of files you won't need anymore
+# trimmed & quality-checked reads
+rm ERR1424597_1P.fastq
+rm ERR1424597_2P.fastq
+# bowtie2 default output (all reads, mapped or unmapped)
+rm ERR1424597_mapped_to_org.sam
+# reads mapped to organelle in SAM format
 rm ERR1424597_filtered.1
 rm ERR1424597_filtered.2
 ```
