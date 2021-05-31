@@ -173,10 +173,27 @@ module load jellyfish/2.3.0
 jellyfish count -C -m 21 -s 1000000000 -t 10 ERR1424597_filtered.*.fastq -o reads.jf
 jellyfish histo -t 10 reads.jf > reads.histo
 ```
-Note that Jellyfish is quite computationally expensive! You'll want to make sure to allocate a lot of memory in your SLURM script (this job took XGb of RAM and X hours when I ran it).  
+Note that Jellyfish is quite computationally expensive! You'll want to make sure to allocate enough memory in your SLURM script (this job took 3.45 GB of RAM and only a few minutes when I ran it). Note that large genomes will take longer and require more RAM.
 
 Once you've generated the read histogram from Jellyfish, you can upload the reads.histo file to [GenomeScope](http://qb.cshl.edu/genomescope/). GenomeScope uses a modelling approach to estimate genome heterozygosity, repeat content, and size from sequencing reads using a kmer-based statistical approach. You can also do write a short R script to estimate genome size following [this tutorial](http://koke.asrc.kanazawa-u.ac.jp/HOWTO/kmer-genomesize.html).
 
+The output from GenomeScope should look something like this: 
+
+![GenomeScope output](https://github.com/jessiepelosi/hipergator_intro/blob/main/Arabidopsis_genome/Arabid_genomescope.png "GenomeScope output")
+
+Along the top of the graph, GenomeScope gives you an estimate of the genome size (`len`) which is about 114 Mb in this example. <i> Arabidopsis thaliana </i> has a genome size around 135 Mb so this is pretty close! It also provides estimates of heterozygosity (`het`)- in this case `het` is 0.234% of the sites in the genome are heterozygous, which is pretty low- the lower the heterozygosity the easier it will be to assemble the genome. The major peak in the graph outlined in black gives you an estiamte of the average coverage you'll have (e.g., how many times is each base in the genome covered with a read). This is about 50x coverage with these data. The peak outlined in oragne represents rare and random sequencing errors. GenomeScope also outputs information about the models that it fits over the kmer distribution in case you want a closer look at the output: 
+```
+GenomeScope version 1.0
+k = 21
+
+property                      min               max               
+Heterozygosity                0.226732%         0.240516%         
+Genome Haploid Length         113,844,841 bp    114,072,489 bp    
+Genome Repeat Length          11,384,898 bp     11,407,664 bp     
+Genome Unique Length          102,459,942 bp    102,664,825 bp    
+Model Fit                     93.3295%          94.7049%          
+Read Error Rate               0.333094%         0.333094%  
+```
 
 ## 6. Genome Assembly 
 
@@ -185,7 +202,7 @@ Genome assembly programs employ algorithms which use <b>De Bruijn graphs</b> to 
 ```
 module load kmergenie
 # Create list of file inputs for kmergenie to read
-ls -1 ERR1424597_filtered.*.fastq > file_list.txt
+ls -1 ERR1424597_filtered.* > file_list.txt
 # Run kmergenie with 8 threads, output files use the prefix kmer_assembl_est
 $KMG_DIR/kmergenie file_list.txt -o kmer_assembl_est -t 8
 ```
@@ -209,8 +226,8 @@ pair_num_cutoff=3
 # minimum aligned length to contigs for a reliable read location (at least 32 for short insert size)
 map_len=32
 # a pair of fastq files, read 1 file should always be followed by read 2 file
-q1=/path/**LIBNAMEA**/ERR1424597_1P.fastq
-q2=/path/**LIBNAMEA**/ERR1424597_2P.fastq
+q1=/path/**LIBNAMEA**/ERR1424597_filtered.1
+q2=/path/**LIBNAMEA**/ERR1424597_filtered.2
 ``` 
 To run the program (all parts) use the command: (**Don't forget to change the kmer size here!!**)
 ```
