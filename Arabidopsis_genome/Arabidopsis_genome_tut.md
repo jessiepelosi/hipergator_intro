@@ -206,8 +206,8 @@ Read Error Rate               0.333094%         0.333094%
 Genome assembly programs employ algorithms which use <b>De Bruijn graphs</b> to figure out what reads fit together into a <b>contig</b>. De Bruijn graphs map the relationship between <b>k-mers</b>, so you will need to tell your assembler the size of the k-mers you want it to use. We will figure this out using the program `kmergenie`.
 
 ```
-module load kmergenie
 # Create list of file inputs for kmergenie to read
+KMG_DIR = "/blue/soltis/kasey.pham/bin"
 ls -1 ERR1424597_filtered.* > file_list.txt
 # Run kmergenie with 8 threads, output files use the prefix kmer_assembl_est
 $KMG_DIR/kmergenie file_list.txt -o kmer_assembl_est -t 8
