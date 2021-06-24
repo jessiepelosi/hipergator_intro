@@ -134,7 +134,7 @@ organelle_db.rev.2.bt2
 This means your indexing worked, so you can move on to mapping your reads. If you check the [documentation](http://bowtie-bio.sourceforge.net/bowtie2/manual.shtml#the-bowtie2-build-indexer), `Bowtie2` has a ton of options for adjusting how the read mapping proceeds, but we will be keeping things simple.
 
 ```
-bowtie2 -p 8 -q --end-to-end -x organelle_db -1 ERR1424597_1P.fastq -2 ERR1424597_2P.fastq --un-conc ERR1424597_filtered -S ERR1424597_mapped_to_org.sam
+bowtie2 -p 8 -q --end-to-end -x organelle_db -1 ERR1424597_1P.fastq -2 ERR1424597_2P.fastq --un-conc ERR1424597_filtered_%P.fastq -S ERR1424597_mapped_to_org.sam
 ```
 
 Let's break down the arguments:
@@ -144,22 +144,12 @@ Let's break down the arguments:
 * <b>x</b>: The name of the index database of your reference sequences that you created in the previous step.
 * <b>1</b>: The forward-facing half of the read pair set to be mapped.
 * <b>2</b>: The backwards-facing half of the read pair set to be mapped.
-* <b>un-conc</b>: This tells the program to output the unmapped reads to a set of files with the label provided, ERR1424597_filtered.
+* <b>un-conc</b>: This tells the program to output the unmapped reads to a set of files with the label provided, ERR1424597_filtered_1/2P.fastq
 * <b>S</b>: This tells the program to output all results to a `sam` type file with the name ERR1424597_mapped_to_org.sam
 
-We are actually just interested in the <i>unmapped</i> reads, as these are the nuclear reads that we will want to use in our genome assembly! They are in the `sam` format, though, and we will want to convert them back to `fastq` before moving onto the next step.
+We are actually just interested in the <i>unmapped</i> reads, as these are the nuclear reads that we will want to use in our genome assembly! Before we move on, let's do some file cleanup. We would usually keep a bit more, but this assembly is just for practice, so we're going to do a lot of deleting.
 
 ```
-module load samtools
-
-# Convert sam file to bam file
-samtools view ERR1424597_filtered.1 --output-fmt bam > ERR1424597_filtered.1.bam
-samtools view ERR1424597_filtered.2 --output-fmt bam > ERR1424597_filtered.2.bam
-
-# Convert bam file to fastq file
-samtools fastq ERR1424597_filtered.1.bam > ERR1424597_filtered.1.fastq
-samtools fastq ERR1424597_filtered.2.bam > ERR1424597_filtered.2.fastq
-
 # Clean up some of files you won't need anymore
 # trimmed & quality-checked reads
 rm ERR1424597_1P.fastq
