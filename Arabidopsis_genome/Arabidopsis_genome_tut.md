@@ -166,7 +166,7 @@ rm ERR1424597_filtered.2
 Next, you'll want to estimate the genome size using k-mers, which are short substrings of length contained within a DNA sequence. We first have to count k-mers of a certain length (most commonly we use 17 or 21bp k-mers, which can also be written as 17-mer and 21-mer). We'll use [Jellyfish](http://www.genome.umd.edu/jellyfish.html#:~:text=Jellyfish%20is%20a%20tool%20for,of%20k%2Dmers%20in%20DNA.&text=Jellyfish%20is%20a%20command%2Dline,the%20%22jellyfish%20dump%22%20command.) for this step. 
 ```
 module load jellyfish/2.3.0
-jellyfish count -C -m 21 -s 1000000000 -t 10 ERR1424597_filtered.*.fastq -o reads.jf
+jellyfish count -C -m 21 -s 1000000000 -t 10 ERR1424597_filtered_*P.fastq -o reads.jf
 jellyfish histo -t 10 reads.jf > reads.histo
 ```
 Note that Jellyfish is quite computationally expensive! You'll want to make sure to allocate enough memory in your SLURM script (this job took 3.45 GB of RAM and only a few minutes when I ran it). Note that large genomes will take longer and require more RAM.
