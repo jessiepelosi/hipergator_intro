@@ -200,7 +200,7 @@ Genome assembly programs employ algorithms which use <b>De Bruijn graphs</b> to 
 find $PWD/ERR1424597_filtered.* > file_list.txt
 # Run kmergenie with 8 threads, output files use the prefix kmer_assembl_est
 # (Do this part below using a SLURM job, and don't forget to change the amount of cpus you request to 8!)
-KMG_DIR = "/blue/soltis/kasey.pham/bin"
+KMG_DIR="/blue/soltis/kasey.pham/bin"
 $KMG_DIR/kmergenie file_list.txt -o kmer_assembl_est -t 8
 ```
 
@@ -213,7 +213,7 @@ find $PWD/ERR1424597_filtered.* > file_list.txt
 
 # Run kmergenie with 8 threads, output files use the prefix kmer_assembl_est
 # (Do this part below using a SLURM job, and don't forget to change the amount of cpus you request to 8!)
-KMG_DIR = "/directory/where/kmergenie/executable/is/located/here"
+KMG_DIR="/directory/where/kmergenie/executable/is/located/here"
 $KMG_DIR/kmergenie file_list.txt -o kmer_assembl_est -t 8
 
 ```
