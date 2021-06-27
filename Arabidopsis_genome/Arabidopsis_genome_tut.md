@@ -197,11 +197,30 @@ Genome assembly programs employ algorithms which use <b>De Bruijn graphs</b> to 
 
 ```
 # Create list of file inputs for kmergenie to read
-KMG_DIR = "/blue/soltis/kasey.pham/bin"
-ls -1 ERR1424597_filtered.* > file_list.txt
+find $PWD/ERR1424597_filtered.* > file_list.txt
 # Run kmergenie with 8 threads, output files use the prefix kmer_assembl_est
+# (Do this part below using a SLURM job, and don't forget to change the amount of cpus you request to 8!)
+KMG_DIR = "/blue/soltis/kasey.pham/bin"
 $KMG_DIR/kmergenie file_list.txt -o kmer_assembl_est -t 8
 ```
+
+Alternate commands if you installed kmergenie in your own folder (locally):
+
+```
+# Create a list of file inputs for kmergenie to read
+find $PWD/ERR1424597_filtered.* > file_list.txt
+# (You can also manually create a text file with the filenames of all read files you want to use in your assembly, one per line.)
+
+# Run kmergenie with 8 threads, output files use the prefix kmer_assembl_est
+# (Do this part below using a SLURM job, and don't forget to change the amount of cpus you request to 8!)
+KMG_DIR = "/directory/where/kmergenie/executable/is/located/here"
+$KMG_DIR/kmergenie file_list.txt -o kmer_assembl_est -t 8
+
+```
+
+What the commands means:
+* First, we create a *bash* variable, `KMG_DIR`, which stores the location of the `kmergenie` executable file. Until now, you have used programs where if you just type in the name, the computer automatically knows what you're talking about. This is actually obscuring some things happening secretly in HiperGator. If a program is installed *globally* (for all users), the path to the executable file for that program is stored on the computer, so you don't have to type it out every time you want to use that program. When you just type the name of the program with no full address into the terminal, the computer will recognize that the executable file isn't in your current directory and look at its hidden list of locations to see if any of them have your program, and if so, will use that. Since we installed `kmergenie` *locally*, the computer won't do that, so you have to provide the full address yourself.
+* In the second line, we run the `kmergenie` program. It takes the list of files to process first, and then saves all output files to the name you provide using the flag `-o`. To speed up the runtime, we use 8 threads/cpus by specifying `-t 8`. You will need to specify that you need 8 threads/cpus in your SLURM script as well by adding/editing a line in the header: `#SBATCH --cpus-per-task=8`
 
 Now check the log file from your job. What k-mer size is optimal for this assembly?
 You should have gotten *INSERT K-MER SIZE HERE*. Now we can move on to actually assembling the genome.
