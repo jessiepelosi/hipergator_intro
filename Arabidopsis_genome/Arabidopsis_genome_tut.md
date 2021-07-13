@@ -259,26 +259,60 @@ In a perfect world, genome assemblers would produce 1 scaffold for each chromoso
 ## 7. Assess Assembly Quality
 Now that you've assembled the genome, you will want to assess it to figure out how well you did. One way of doing this is counting how many genes are present in your assembly that you expect to be there. To do this, we will use a pipeline called [BUSCO](https://busco.ezlab.org/). Genes assessed by `BUSCO` are conserved across almost all of the Tree of Life, so if they are missing, you can probably assume that it is because your genome assembly is incomplete rather than because your organism doesn't have that gene.
 
+First, we will need to make and copy a few directories.
+```
+module load busco
+# make a subdirectory where you keep all your BUSCO-related files
+mkdir busco
+cd busco
+# copy the AUGUSTUS configuration directory from the universal Hipergator installation folder
+cp /apps/busco/5.2.0/config augustus_config
+```
+
 You will need to create a config file called `config.ini` to run `BUSCO` properly. This configuration file will have all the options you would normally pass to the function directly in the command line; a config file for complicated programs like `BUSCO` just keeps all your code looking a bit neater. Here is how your config file will look (feel free to copy and paste):
 
 ```
 [busco_run]
+# Input file
+in = /path/to/fasta/infile
+# Run name, used in output files and folder
+out = busco_out
+# Where to store the output directory
+out_path = /path/to/busco/directory
 # Path to the BUSCO dataset
 lineage_dataset = embryophyta_odb10
 # Which mode to run (genome / proteins / transcriptome)
 mode = genome
+# Run lineage auto selector
+;auto-lineage = True
+# Run auto selector only for non-eukaryote datasets
+;auto-lineage-prok = True
+# Run auto selector only for eukaryote datasets
+;auto-lineage-euk = True
 # How many threads to use for multithreaded steps
 cpu = 8
 # Force rewrite if files already exist (True/False)
 force = True
 # BLAST e-value
 evalue = 1e-3
+# How many candidate regions (contigs, scaffolds) to consider for each BUSCO
+;limit = 3
 # Augustus long mode for retraining (True/False)
 long = False
+# Augustus species
+;augustus_species = human
+# Augustus parameters
+;augustus_parameters='--genemodel=intronless,--singlestrand=false'
+# Quiet mode (True/False)
+;quiet = False
 # Local destination path for downloaded lineage datasets
-download_path = /ufrc/data/reference/busco/4.0
+download_path = /path/to/augustus/config/dir/species
 # Run offline
 offline=True
+# Ortho DB Datasets version
+;datasets_version = odb10
+# URL to BUSCO datasets
+;download_base_url = https://busco-data.ezlab.org/v4/data/
 # Download most recent BUSCO data and files
 update-data = False
 
