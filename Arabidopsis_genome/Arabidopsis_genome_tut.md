@@ -261,25 +261,28 @@ Now that you've assembled the genome, you will want to assess it to figure out h
 
 First, we will need to make and copy a few directories.
 ```
-module load busco
+module load busco/5.2.0
 # make a subdirectory where you keep all your BUSCO-related files
 mkdir busco
 cd busco
 # copy the AUGUSTUS configuration directory from the universal Hipergator installation folder
-cp /apps/busco/5.2.0/config augustus_config
+cp /apps/busco/5.2.0/config augustus_config augustus_config
 ```
 
 You will need to create a config file called `config.ini` to run `BUSCO` properly. This configuration file will have all the options you would normally pass to the function directly in the command line; a config file for complicated programs like `BUSCO` just keeps all your code looking a bit neater. Here is how your config file will look (feel free to copy and paste):
 
 ```
+# BUSCO configuration file
+# lines starting with a semicolon (;) or hashtag (#) are commented and will not be run.
+
 [busco_run]
-# Input file
-in = /path/to/fasta/infile
-# Run name, used in output files and folder
+# Input file - EDIT THIS
+in = /path/to/assembly/scaffold/fasta/file
+# Run name, used in output files and folder. This can be anything you want. - EDIT THIS
 out = busco_out
-# Where to store the output directory
+# Where to store the output directory - EDIT THIS
 out_path = /path/to/busco/directory
-# Path to the BUSCO dataset
+# Path to the BUSCO dataset. We are using the dataset for land plants.
 lineage_dataset = embryophyta_odb10
 # Which mode to run (genome / proteins / transcriptome)
 mode = genome
@@ -289,86 +292,106 @@ mode = genome
 ;auto-lineage-prok = True
 # Run auto selector only for eukaryote datasets
 ;auto-lineage-euk = True
-# How many threads to use for multithreaded steps
+# How many threads to use for multithreaded steps - Don't forget to specify 9 cpus in your job file!
+# We specify 1 more cpu than we need because one of the dependent programs (BLAST) uses one more than specified.
 cpu = 8
 # Force rewrite if files already exist (True/False)
 force = True
-# BLAST e-value
+# BLAST e-value. If you want to know more about BLAST sequence similarity searches, check out the NCBI BLAST+ documentation.
 evalue = 1e-3
 # How many candidate regions (contigs, scaffolds) to consider for each BUSCO
 ;limit = 3
 # Augustus long mode for retraining (True/False)
 long = False
-# Augustus species
+# Augustus species. For if you want to refine the gene predictions made by BUSCO. We don't need that for just doing quality checking.
 ;augustus_species = human
-# Augustus parameters
+# Augustus parameters.
 ;augustus_parameters='--genemodel=intronless,--singlestrand=false'
 # Quiet mode (True/False)
 ;quiet = False
-# Local destination path for downloaded lineage datasets
-download_path = /path/to/augustus/config/dir/species
-# Run offline
+# Local destination path for downloaded lineage datasets. - EDIT THIS
+# You should put the address of the directory called "species" in your local copy of the AUGUSTUS config directory
+download_path = /path/to/augustus/config/species/dir
+# Run offline. Keeps BUSCO from downloading the latest database files from the internet.
 offline=True
 # Ortho DB Datasets version
 ;datasets_version = odb10
 # URL to BUSCO datasets
 ;download_base_url = https://busco-data.ezlab.org/v4/data/
-# Download most recent BUSCO data and files
+# Download most recent BUSCO data and files.
 update-data = False
 
 [tblastn]
-path = /apps/busco/4.0.6/bin/
+path = /apps/busco/5.2.0/bin/
 command = tblastn
 
 [makeblastdb]
-path = /apps/busco/4.0.6/bin/
+path = /apps/busco/5.2.0/bin/
 command = makeblastdb
 
 [augustus]
-path = /apps/busco/4.0.6/bin/
+path = /apps/busco/5.2.0/bin/
 command = augustus
 
 [etraining]
-path = /apps/busco/4.0.6/bin/
+path = /apps/busco/5.2.0/bin/
 command = etraining
 
 [gff2gbSmallDNA.pl]
-path = /apps/busco/4.0.6/bin/
+path = /apps/busco/5.2.0/bin/
 command = gff2gbSmallDNA.pl
 
 [new_species.pl]
-path = /apps/busco/4.0.6/bin/
+path = /apps/busco/5.2.0/bin/
 command = new_species.pl
 
 [optimize_augustus.pl]
-path = /apps/busco/4.0.6/bin/
+path = /apps/busco/5.2.0/bin/
 command = optimize_augustus.pl
 
 [hmmsearch]
-path = /apps/busco/4.0.6/bin/
+path = /apps/busco/5.2.0/bin/
 command = hmmsearch
 
 [sepp]
-path = /apps/busco/4.0.6/bin/
+path = /apps/busco/5.2.0/bin/
 command = run_sepp.py
 
 [prodigal]
-path = /apps/busco/4.0.6/bin/
+path = /apps/busco/5.2.0/bin/
 command = prodigal
 ```
 
-Save the above to `config.ini`. There are many other options for running BUSCO, but we will not need them for now since you are doing a simple completeness assessment. You can see some of the other options if you look through the documentation.
+Save the above to `config.ini` in the busco directory. There are many other options for running `BUSCO`, but we will not need them for now since you are doing a simple completeness assessment. You can see some of the other options if you look through the documentation.
 
-Now let's run the program. `BUSCO` is doing a lot of complicated stuff under the hood, so it will need a lot of memory and time. (**Give estimates here**).
+Now let's run the program. `BUSCO` is doing a lot of complicated stuff under the hood, so it will need a lot of memory and time. My run for a 2 Gb genome required 100Gb of RAM and 1 full day; for Arabidopsis you will probably need much less since your dataset is smaller.
+
+Your job file should look something like this:
 
 ```
-module load busco
-# create a Linux variable so that BUSCO will know where the config file is
-export BUSCO_CONFIG_FILE="/ufrc/soltis/kasey.pham/tprat_genome/busco/config.ini"
-# create a Linux variable so that BUSCO will know where one of its dependent programs is
-export AUGUSTUS_CONFIG_PATH="/ufrc/soltis/kasey.pham/tprat_genome/busco/augustus_config"
+#!/bin/bash
+#SBATCH --account=soltis
+#SBATCH --qos=soltis-b
+#SBATCH --job-name=busco
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=your-email-here@ufl.edu # EDIT THIS
+#SBATCH --mem=100gb # EDIT THIS
+#SBATCH --time=24:00:00 # EDIT THIS
+#SBATCH --cpus-per-task=9 # If you specified 8 cpus in the config file this is how many you need in the job file.
+#SBATCH --nodes=1
+#SBATCH --output=busco_%j.out
+#SBATCH --error=busco_%j.err
 
-busco -f -i athaliana_soap.contig -o athaliana_busco
+module load busco/5.2.0
+# We will not actually need to load AUGUSTUS since BUSCO has its own copy of the program installed.
+
+# create a Linux variable so that BUSCO will know where the config file is
+export BUSCO_CONFIG_FILE="/your/path/to/config.ini"
+# create a Linux variable so that BUSCO will know where one of its dependent programs is
+export AUGUSTUS_CONFIG_PATH="/your/path/to/augustus_config"
+
+# You don't actually need to specify any arguments because you've provided all of them in your config file
+busco --config $BUSCO_CONFIG_FILE
 ```
 
 Now take a look at the end of your output log file from the job. `BUSCO` should have printed a summary of what it found. What is the total completeness of your genome? How many complete single copy genes did `BUSCO` recover? How many fragments? How many are missing?
