@@ -310,16 +310,16 @@ long = False
 # Quiet mode (True/False)
 ;quiet = False
 # Local destination path for downloaded lineage datasets. - EDIT THIS
-# You should put the address of the directory called "species" in your local copy of the AUGUSTUS config directory
+# (You should put the address of the directory called "species" in your local copy of the AUGUSTUS config directory)
 download_path = /path/to/augustus/config/species/dir
 # Run offline. Keeps BUSCO from downloading the latest database files from the internet.
-offline=True
+offline=False
 # Ortho DB Datasets version
 ;datasets_version = odb10
 # URL to BUSCO datasets
-;download_base_url = https://busco-data.ezlab.org/v4/data/
+download_base_url = https://busco-data.ezlab.org/v4/data/
 # Download most recent BUSCO data and files.
-update-data = False
+update-data = True
 
 [tblastn]
 path = /apps/busco/5.2.0/bin/
