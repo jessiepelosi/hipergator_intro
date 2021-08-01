@@ -1,11 +1,12 @@
 # Arabidopsis Genome Assembly Tutorial 
 
 By the end of this tutorial you should be able to:
-1. Generate a genome assembly from short read sequence data 
-2. Generate a genome assembly using both long and short read sequence data 
+1. Assess the quality of raw short reads
+2. Generate a genome assembly from short read sequence data
+3. Assess the quality of a genome assembly
 
 This is a tutorial for the assembly of the <i> Arabidopsis </i> genome. 
-The first part of this tutorial uses SOAPdenovo to assemble the <i> Arabidopsis thaliana </i> genome with short reads, while the second part of the tutorial will use a hybrid assembly approach. 
+This first part of this tutorial uses SOAPdenovo to assemble the <i> Arabidopsis thaliana </i> genome with short reads, while the [second part](https://github.com/jessiepelosi/hipergator_intro/edit/main/Arabidopsis_genome/long_reads_tut.md) of the tutorial will use a hybrid assembly approach. 
 
 # Short Read Assembly 
 
