@@ -25,7 +25,7 @@ mkdir Arabidopsis_genome
 cd Arabidopsis_genome
 ```
 
-You can download data using the `sra` module on HiPerGator like this. Remeber to run all your commands with a SLURM script! 
+You can download data using the `sra` module on HiPerGator like this. Remember to run all your commands with a SLURM script! 
 ```
 module load sra
 fasterq-dump ERR1424597 --split-files 
