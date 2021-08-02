@@ -11,6 +11,8 @@ The data we are using is from [Michael et al. 2018](https://www.nature.com/artic
 | ------------- |------------------|------------|-------------|-------------|
 |ERR2173373     | Nanopore MinION	 | single     | 300071      | 3.42 Gb     |
 
+You'll notice that reads generated from "third-generation technologies" like Nanopore and PacBio (long-read technologies) do not have pairs; instead they are sequenced in only one direction! There has been attempt to generate forward and reverse reads with Nanopore technology though the vast majority of long-reads you'll see from Nanopore are described as "1D", meaning strands are sequenced in one direction.
+
 ## 1. Download the Data
 
 Let's make a directory for the long read data
@@ -25,3 +27,15 @@ wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR217/003/ERR2173373/ERR2173373.fastq.g
 ```
 
 ## 2. Quality Check
+
+Most of the quality checking process for Nanopore reads actually occurs during the base-calling phase. Base-calling is the process by which the disturbance of the electrical signal along the pore (caused by the passage of the DNA molecule through the pore) is translated into bases. The electrical signals are colloquially referred to as "squiggles" and are stored in a .fast5 file which are quite large. Base-calling usually takes place on the computer (typically a GPU) to which the .fast5 files are being written using Nanopore's proprietary software Guppy. Guppy can also apply filters to remove reads that are, most commonly, below a Q7 quality score. A Q7 quality score corresponds to a base being correctly called about 90% of the time (CHECK THIS), which means that about 1 out of every 10 bases may be incorrectly called! Long-read technolgoies are inherently "noisy" meaning they must be corrected and polished using multiple itterations of read mapping and/or short reads. This process occurs during the assembly steps. 
+
+If you would like to check out some tools to explore Nanopore reads, try [Nanopack](https://github.com/wdecoster/nanopack) from [deCoster et al. 2018](https://academic.oup.com/bioinformatics/article/34/15/2666/4934939). 
+
+We should, however, filter out reads that are less than 1000bp. 
+
+## 3. Assembly with Flye 
+
+
+
+
