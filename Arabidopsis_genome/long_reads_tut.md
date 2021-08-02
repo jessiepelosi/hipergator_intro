@@ -32,7 +32,13 @@ Most of the quality checking process for Nanopore reads actually occurs during t
 
 If you would like to check out some tools to explore Nanopore reads, try [Nanopack](https://github.com/wdecoster/nanopack) from [deCoster et al. 2018](https://academic.oup.com/bioinformatics/article/34/15/2666/4934939). 
 
-We should, however, filter out reads that are less than 1000bp. 
+We should, however, filter out reads that are less than 1000bp. We can do this `Seqtk` and `awk`. 
+
+```
+module load seqtk
+seqtk comp ERR2173373.fastq | awk '{ if (($2 >= 1000)) { print } }' | cut --fields 1 > selected-seq-names.list
+seqtk subseq ERR2173373.fastq selected-seq-names.list > filtered_reads.fq 
+```
 
 ## 3. Assembly with Flye 
 
