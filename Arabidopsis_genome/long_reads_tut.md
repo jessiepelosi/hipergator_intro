@@ -28,7 +28,7 @@ wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR217/003/ERR2173373/ERR2173373.fastq.g
 
 ## 2. Quality Check
 
-Most of the quality checking process for Nanopore reads actually occurs during the base-calling phase. Base-calling is the process by which the disturbance of the electrical signal along the pore (caused by the passage of the DNA molecule through the pore) is translated into bases. The electrical signals are colloquially referred to as "squiggles" and are stored in a .fast5 file which are quite large. Base-calling usually takes place on the computer (typically a GPU) to which the .fast5 files are being written using Nanopore's proprietary software Guppy. Guppy can also apply filters to remove reads that are, most commonly, below a Q7 quality score. A Q7 quality score corresponds to a base being correctly called about 90% of the time (CHECK THIS), which means that about 1 out of every 10 bases may be incorrectly called! Long-read technolgoies are inherently "noisy" meaning they must be corrected and polished using multiple itterations of read mapping and/or short reads. This process occurs during the assembly steps. 
+Most of the quality checking process for Nanopore reads actually occurs during the base-calling phase. Base-calling is the process by which the disturbance of the electrical signal along the pore (caused by the passage of the DNA molecule through the pore) is translated into bases. The electrical signals are colloquially referred to as "squiggles" and are stored in a .fast5 file which are quite large. Base-calling usually takes place on the computer (typically a GPU) to which the .fast5 files are being written using Nanopore's proprietary software Guppy. Guppy can also apply filters to remove reads that are, most commonly, below a Q7 quality score. A Q7 quality score corresponds to a base being correctly called a bit less than 90% of the time, which means that about 1 out of every 10 bases may be incorrectly called! Long-read technolgoies are inherently "noisy" meaning they must be corrected and polished using multiple itterations of read mapping and/or short reads. This process occurs during the assembly steps. 
 
 If you would like to check out some tools to explore Nanopore reads, try [Nanopack](https://github.com/wdecoster/nanopack) from [deCoster et al. 2018](https://academic.oup.com/bioinformatics/article/34/15/2666/4934939). 
 
@@ -41,7 +41,13 @@ seqtk subseq ERR2173373.fastq selected-seq-names.list > filtered_reads.fq
 ```
 
 ## 3. Assembly with Flye 
+We'll be using the long read assembler [`Flye`](https://github.com/fenderglass/Flye/blob/flye/docs/USAGE.md) to do the initial assembly. There isn't too much pre-preparation needed, just go ahead and run the program. Remember to submit this as a job! You will probably need a significant amount of time and memory.
+```
+module load flye
+mkdir flye_assembly
+flye --nano-raw filtered_reads.fq --out-dir flye_assembly --genome-size 135m --threads 16
+# (PLEASE CHECK THIS JESSIE LOL)
+```
 
-
-
+## 4. Assembly Polishing in Pilon
 
