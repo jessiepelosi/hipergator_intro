@@ -40,14 +40,13 @@ seqtk comp ERR2173373.fastq | awk '{ if (($2 >= 1000)) { print } }' | cut --fiel
 seqtk subseq ERR2173373.fastq selected-seq-names.list > filtered_reads.fq 
 ```
 
-## 3. Assembly with Flye 
-We'll be using the long read assembler [`Flye`](https://github.com/fenderglass/Flye/blob/flye/docs/USAGE.md) to do the initial assembly. There isn't too much pre-preparation needed, just go ahead and run the program. Remember to submit this as a job! You will probably need a significant amount of time and memory.
+## 3. Assembly with HASLR
+We'll be using the long read assembler [`HASLR`](https://github.com/vpc-ccg/haslr) to do the initial assembly. There isn't too much pre-preparation needed, just go ahead and run the program. Remember to submit this as a job! You will probably need a significant amount of time and memory (up to 50 Gb and at least two weeks in run time) and don't forget to change your requested amount of cpus to match the number of threads in the command!
 ```
-module load flye
-mkdir flye_assembly
-flye --nano-raw filtered_reads.fq --out-dir flye_assembly --genome-size 135m --threads 16
-# (PLEASE CHECK THIS JESSIE LOL)
+module load haslr
+mkdir haslr_assembly
+haslr.py -o haslr_assembly -t 12 -g 140m -l filtered_reads.fq -x nanopore -s ADDRESS/OF/ARABIDOPSIS/TRIMMED/SHORT/READS/FROM/LAST/TUTORIAL
+--nano-raw  --out-dir flye_assembly --genome-size 135m --threads 16
 ```
 
-## 4. Assembly Polishing in Pilon
-
+## 4. Assembly Quality Assessment
