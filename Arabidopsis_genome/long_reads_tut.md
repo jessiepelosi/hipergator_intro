@@ -45,8 +45,15 @@ We'll be using the long read assembler [`HASLR`](https://github.com/vpc-ccg/hasl
 ```
 module load haslr
 mkdir haslr_assembly
-haslr.py -o haslr_assembly -t 12 -g 140m -l filtered_reads.fq -x nanopore -s ADDRESS/OF/ARABIDOPSIS/TRIMMED/SHORT/READS/FROM/LAST/TUTORIAL
---nano-raw  --out-dir flye_assembly --genome-size 135m --threads 16
+haslr.py -o haslr_assembly -t 16 -g 140m -l filtered_reads.fq -x nanopore -s ADDRESS/OF/ARABIDOPSIS/TRIMMED/SHORT/READS/FROM/LAST/TUTORIAL
 ```
+
+Once again, let's break down what each option means.
+* __o__: the output directory for your assembly
+* __t__: the number of parallel threads to use during computing
+* __g__: estimated genome size of your sample
+* __l__: the file storing your long reads
+* __x__: the type of long read technology used
+* __s__: the file storing your short reads to do error correction and polishing
 
 ## 4. Assembly Quality Assessment
