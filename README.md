@@ -10,7 +10,7 @@ Suggestions from Cody Howard, Emily Sessa, and Weston Testo
 
 Last updated: April 21, 2021 
 
-<b>0. Your Computer </b>
+<b>[0. Your Computer](https://github.com/jessiepelosi/hipergator_intro/blob/main/0.%20Your%20Computer/0.YourComputerTut.md) </b>
 
 Objectives:  
 
@@ -18,7 +18,7 @@ Objectives:
  * Access the command line on your machine 
  * Move files between your computer and the computing cluster 
 
-<b>1. Logging In and Moving Around </b> 
+<b>[1. Logging In and Moving Around](https://github.com/jessiepelosi/hipergator_intro/tree/main/1.%20Logging%20In%20and%20Moving%20Around)</b> 
 
 Objectives: 
 
@@ -26,7 +26,7 @@ Objectives:
   * Become comfortable moving around and navigating between directories on the computing cluster 
   * Familiarize yourself with commands: `ls`, `cd`, `mkdir`, `pwd`
 
-<b>2. Copying, Editing, and Moving Files </b>
+<b>[2. Copying, Editing, and Moving Files](https://github.com/jessiepelosi/hipergator_intro/blob/main/2.CopyingEditingMovingAround/2.CopyingEditingMovingAroundTut.md) </b>
 
 Objectives: 
 
@@ -34,14 +34,14 @@ Objectives:
   * Become comfortable with editing, copying, and moving files on the command line 
   * Familiarize yourself with commands: `cp`, `mv`, `head`, `tail`, `less`, `wc`
 
-<b>3. Big Edits </b> 
+<b>[3. Big Edits](https://github.com/jessiepelosi/hipergator_intro/blob/main/3.BigEdits/3.BigEditsTut.md) </b> 
 
 Objectives: 
 
   * Use basic regular expressions in search and replace commands in a plain text editor and on the command line 
   * Familiarize yourself with commands: `grep`, `awk`, `sed`
 
-<b>4. SLURM Jobs </b>
+<b>[4. SLURM Jobs](https://github.com/jessiepelosi/hipergator_intro/blob/main/4.SLURMJobs/4.SLURMJobsTut.md) </b>
 
 Objectives: 
 
