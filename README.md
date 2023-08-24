@@ -18,7 +18,7 @@ Objectives:
  * Access the command line on your machine 
  * Move files between your computer and the computing cluster 
 
-<b>[1. Logging In and Moving Around](https://github.com/jessiepelosi/hipergator_intro/tree/main/1.%20Logging%20In%20and%20Moving%20Around)</b> 
+<b>[1. Logging In and Moving Around](https://github.com/jessiepelosi/hipergator_intro/blob/main/1.%20Logging%20In%20and%20Moving%20Around/1.LoggingInMovingAroundTut.md)</b> 
 
 Objectives: 
 
